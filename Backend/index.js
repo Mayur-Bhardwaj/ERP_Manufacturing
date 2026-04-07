@@ -2,7 +2,9 @@ import express from "express";
 import authRoutes from "./routes/authRoutes.js"
 const app = express();
 const port = 5000;
+import dotenv from "dotenv";
 
+dotenv.config();
 // middleware (important for future APIs)
 app.use(express.json());
 

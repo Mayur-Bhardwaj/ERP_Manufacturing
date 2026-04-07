@@ -1,5 +1,5 @@
 import express from "express";
-import { signup } from "../controllers/authController.js";
+import { login, signup } from "../controllers/authController.js";
 // const { register, login, signup } = require("../controllers/authController.js");
 
 const router = express.Router();
@@ -8,5 +8,6 @@ const router = express.Router();
 // router.post("/register", register);
 // router.post("/login", login);
 router.post("/signup", signup);
+router.post("/login", login);
 
 export default router;
