@@ -1,20 +1,76 @@
 // This middleware is used to protect the ERP Dashboard.
 
-const jwt = require("jsonwebtoken");
-const JWT_SECRET = "erp_secret_key";
+// What is authMiddleware?
 
-module.exports = (req, res, next) => {
-  const token = req.headers["authorization"];
+// 👉 It is a gatekeeper 🚪
+// Before accessing a route, it checks:
 
-  if (!token) {
-    return res.status(401).json({ message: "No token provided" });
-  }
+// Token exists or not
+// Token is valid or not
+// If valid → allow access
+// If invalid → block access
 
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+const authMiddleware = (req, res, next) => {
   try {
+    // 1. Get Authorization header
+    const authHeader = req.headers.authorization;
+
+    // 2. Check if token exists and follows Bearer format
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "Access denied. No token provided",
+      });
+    }
+
+    // 3. Extract token
+    const token = authHeader.split(" ")[1];
+
+    // 4. Verify token
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    // 5. Attach user info to request
     req.user = decoded;
+
+    // 6. Move to next middleware/controller
     next();
-  } catch (err) {
-    return res.status(401).json({ message: "Session expired. Please login again." });
+
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token. Please login again.",
+    });
   }
 };
+
+
+// ---------------------------------- Role Middleware-----------------------------------------------
+
+export const authorizeRoles = (...roles) =>{
+  return (req, res, next) =>{
+    try{
+      if(!roles.includes(req.user.role)){
+        return res.status(400).json({
+          success: false,
+          message: "Access Denied. You don't have Permission",
+        });
+      }
+
+      next();
+    } catch(error){
+      return res.status(500).json({
+        success: false,
+        message: "Authorization Error",
+      });
+    }
+  };
+};
+export default authMiddleware;
+
+// Always send token like:
+
+// Authorization: Bearer YOUR_TOKEN

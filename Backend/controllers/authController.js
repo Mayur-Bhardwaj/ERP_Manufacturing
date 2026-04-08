@@ -9,6 +9,16 @@ export const signup = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
+    // 1. Validaton
+
+    if(!name || !email || !password){
+      return res.status(400).json({
+        success: false,
+        message: "All Fields are required"
+      });
+    }
+
+    // 2. Checking existing user
     const existingUser = await prisma.user.findUnique({
       where : {email}
     });
@@ -16,14 +26,16 @@ export const signup = async (req, res) => {
       return res.status(400).json({message : "User already exists"});
     }
 
+    // 3. Hash Password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // 4. Create user (for default role = "user")
     const user = await prisma.user.create({
       data:{
         name,
         email,
         password: hashedPassword,
-        role
+        role: role || "user", //default role
       }
     });
 
@@ -42,29 +54,53 @@ export const login = async (req, res) =>{
   try{
     const {email, password} = req.body;
 
-    // check user exists
+    // 1. Validation
+    if(!email || !password){
+      return res.status(400).json({
+        success: false,
+        message: "Email and Password are required",
+      });
+    }
+    // 2. check user exists
     const user = await prisma.user.findUnique({
       where : {email}
     });
 
     if(!user){
-      return res.status(400).json({message: "Invalid Email or Password !!"})
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Email or Password !!"
+      });
     }
-    // compare password
+
+    // 2.1 Check user Status
+    if(user.status !== "ACTIVE"){
+      return res.status(403).json({
+        success: false,
+        message: "User is inactive, Contact Admin.",
+      });
+    }
+    // 3. Compare password
     const isMatch  = await bcrypt.compare(password, user.password);
 
     if(!isMatch){
-      return res.status(400).json({message: "Invalid Email or Password."});
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Email or Password."
+      });
     }
 
-    // generate token
-    const token = jwt.sign(
-      {id: user.id, email: user.email},
-      process.env.JWT_SECRET || "dev_secret",
+    // 4. Generate token
+    const token = jwt.sign({
+      id: user.id,
+       email: user.email, 
+       role: user.role  // imp
+      },
+      process.env.JWT_SECRET,
       { expiresIn : "1d"}  // again login after 24 hr, automatic logout
     );
 
-    // remove password which is shown in db
+    // 5. remove password which is shown in db
     const { password: _, ...safeuser} = user;
 
     res.json({
@@ -76,6 +112,9 @@ export const login = async (req, res) =>{
   }
   catch(error){
     console.log(error);
-    res.status(500).json({message: "Login Failed"});
+    res.status(500).json({
+      success:false,
+      message: "Login Failed"
+    });
   }
-}
+};
