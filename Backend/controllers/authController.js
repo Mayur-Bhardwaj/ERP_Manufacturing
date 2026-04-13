@@ -160,5 +160,20 @@ export const login = async (req, res) =>{
   }
 };
 
+// ---------------------------- LOGOUT ----------------------------
 
-// Create for user is active or not  --> Go in Middleware in Nodejs Chatgpt. Also check the excel sheet all red do in first priority. 
+export const logout = (req,res) =>{
+  try{
+    res.json({
+      success: true,
+      message: "Logged out Successfully"
+    });
+
+  } catch(error){
+    console.log("Logout Error", error);
+    res.status(500).json({
+      success: false,
+      message: "Login Failed",
+    })
+  }
+}
