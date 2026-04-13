@@ -1,7 +1,9 @@
 import express from "express";
 import authRoutes from "./routes/authRoutes.js";
-import authMiddleware from "./middleware/authMiddleware.js";
+import {authMiddleware }from "./middleware/authMiddleware.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+
 
 const app = express();
 const port = 5000;
@@ -23,6 +25,7 @@ app.get('/', (req, res) =>{
 
 // Dashboard Route
 app.use("/api", dashboardRouter);
+app.use("/api", userRoutes);
 
 app.get('/api/protected', authMiddleware, (req,res)=>{
   res.json({

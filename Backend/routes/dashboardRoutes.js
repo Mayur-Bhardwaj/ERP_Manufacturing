@@ -1,6 +1,5 @@
 import express from "express";
-import authMiddleware, { authorizeRoles } from "../middleware/authMiddleware.js";
-import router from "./authRoutes.js";
+import {authMiddleware, authorizeRoles } from "../middleware/authMiddleware.js";
 const  dashboardRouter = express.Router();
 
 // Protected Route -- This is for Normal User
@@ -13,7 +12,7 @@ dashboardRouter.get('/dashboard', authMiddleware, (req, res) =>{
 
 // Admins Only
 
-router.get("/admin", authMiddleware, authorizeRoles("admin"), (req, res) =>{
+dashboardRouter.get("/admin", authMiddleware, authorizeRoles("ADMIN"), (req, res) =>{
   res.json({
     message: "Admin Panel"
   });
