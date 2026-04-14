@@ -10,13 +10,25 @@ const prisma = new PrismaClient();
 
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name,
+       email,
+        password,
+        confirmPassword,
+        role,
+        phone,
+        companyName,
+        gstNumber,
+        address,
+        country,
+        state,
+        city,
+        zipCode } = req.body;
 
     const normalizedEmail = email?.toLowerCase();  // remove the duplicacy
 
     // 1. Validaton
 
-    if(!name || !email || !password){
+    if(!name || !email || !password || !confirmPassword){
       return res.status(400).json({
         success: false,
         message: "All Fields are required"
@@ -25,9 +37,9 @@ export const signup = async (req, res) => {
 
     // 2. Check email format validation
 
-    const emailRegix = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if(!emailRegix.test(normalizedEmail)){
+    if(!emailRegex.test(normalizedEmail)){
      return res.status(400).json({
         success: false,
         message: "Invalid Email Format",
@@ -42,20 +54,54 @@ export const signup = async (req, res) => {
       });
     }
 
-    // 4. Checking existing user
+    // 4. Compare Password
+    if(password !== confirmPassword){
+      return res.status(400).json({
+        success: false,
+        message:"Password doesnot match"
+      });
+    }
+
+    // Strong Password
+     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
+
+     if(!passwordRegex.test(password)){
+      return res.status(400).json({
+        success: false,
+        message: "Password must contain letter, number, special character"
+      });
+     }
+
+     // Phone validation (India basic)
+    if (phone && !/^[6-9]\d{9}$/.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number",
+      });
+    }
+
+     // GST validation (optional)
+    if (gstNumber && !/^[0-9A-Z]{15}$/.test(gstNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid GST number",
+      });
+    }
+
+
+    // 5. Checking existing user
     const existingUser = await prisma.user.findUnique({
       where : {email: normalizedEmail},
     });
-    if(existingUser){
+    if(existingUser && !existingUser.isDeleted){
       return res.status(400).json({
         success: false,
-        message : "User already exists"});
+        message : "User already exists for signup."});
     }
 
     // 5. Hash Password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-   
 
     // 6. Create user (for default role = "user")
     const user = await prisma.user.create({
@@ -65,11 +111,21 @@ export const signup = async (req, res) => {
         password: hashedPassword,
         role: role || "USER", //default role
         status: "ACTIVE",
+        isDeleted: false,
+        phone,
+        companyName,
+        gstNumber,
+        address,
+        country,
+        state,
+        city,
+        zipCode
       }
     });
 
     // remove password
     const {password: _, ...safeUser} = user;
+    
      return res.status(201).json({
       success: true,
       message: "User Created Successfully",
@@ -90,7 +146,7 @@ export const login = async (req, res) =>{
   try{
     const {email, password} = req.body;
 
-    const normalizedEmail = email.toLowerCase(); // remove the duplicacy
+    const normalizedEmail = email?.toLowerCase(); // remove the duplicacy
 
     // 1. Validation
     if(!email || !password){
@@ -110,6 +166,13 @@ export const login = async (req, res) =>{
       return res.status(400).json({
         success: false,
         message: "Invalid Email or Password"
+      });
+    }
+    // Soft delete
+      if (user.isDeleted) {
+      return res.status(403).json({
+        success: false,
+        message: "Account removed. Contact admin.",
       });
     }
 
