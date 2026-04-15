@@ -33,9 +33,15 @@
 
       // 4. Verify token
       const decoded = jwt.verify(token, JWT_SECRET);
+      console.log("TOKEN PAYLOAD:", decoded);
+
 
       // 5. Attach user info to request
-      req.user = decoded;
+      // req.user = decoded;
+       req.user = {
+      ...decoded,
+      role: decoded.role?.toUpperCase(),
+    };
 
       // 6. Move to next middleware/controller
       next();
@@ -54,12 +60,23 @@
   export const authorizeRoles = (...roles) => {
     return (req, res, next) =>{
       try{
-        if(!req.user || !roles.includes(req.user.role)){
+        if(!req.user){
           return res.status(403).json({
             success: false,
-            message: "Access Denied. You don't have Permission",
+            message: "Unauthorized",
           });
         }
+        // ✅ normalize both sides
+      const allowedRoles = roles.map((r) => r.toUpperCase());
+
+      if (!allowedRoles.includes(req.user.role)) {
+        return res.status(403).json({
+          success: false,
+          message: "Access Denied. You don't have Permission",
+        });
+      }
+        console.log("USER ROLE:", req.user.role);
+        console.log("ALLOWED ROLES:", roles);
 
         next();
       } catch(error){

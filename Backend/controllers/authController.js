@@ -6,12 +6,20 @@ import { JWT_SECRET } from "../config/env.js";
 
 const prisma = new PrismaClient();
 
+
+// -----------------------------ROLE DEFINED ----------------------
+
+const ROLES = {
+  USER: "USER",
+  ADMIN: "ADMIN",
+};
 // ---------------------------- SIGNUP ----------------------------
 
 export const signup = async (req, res) => {
   try {
     const { name,
-       email,
+        username,
+        email,
         password,
         confirmPassword,
         role,
@@ -25,10 +33,10 @@ export const signup = async (req, res) => {
         zipCode } = req.body;
 
     const normalizedEmail = email?.toLowerCase();  // remove the duplicacy
-
+    const normalizedUsername = username?.toLowerCase();
     // 1. Validaton
 
-    if(!name || !email || !password || !confirmPassword){
+    if(!name || !username || !email || !password || !confirmPassword){
       return res.status(400).json({
         success: false,
         message: "All Fields are required"
@@ -88,12 +96,23 @@ export const signup = async (req, res) => {
       });
     }
 
-
-    // 5. Checking existing user
-    const existingUser = await prisma.user.findUnique({
-      where : {email: normalizedEmail},
+    // check existing email
+    const existingEmail = await prisma.user.findUnique({
+      where: {email:normalizedEmail}
     });
-    if(existingUser && !existingUser.isDeleted){
+     if (existingEmail && !existingEmail.isDeleted) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists",
+      });
+    }
+
+    // 5. Checking existing user     // check duplicate username
+
+    const existingUsername = await prisma.user.findUnique({
+      where : { username: normalizedUsername },
+    });
+    if(existingUsername){
       return res.status(400).json({
         success: false,
         message : "User already exists for signup."});
@@ -102,14 +121,19 @@ export const signup = async (req, res) => {
     // 5. Hash Password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-
-    // 6. Create user (for default role = "user")
+    // ROLE Handling
+      let finalRole = ROLES.USER;
+      if(role === ROLES.ADMIN) {
+        finalRole = ROLES.ADMIN;
+      }
+    // 6. Create user (for default role = "user") and save in db
     const user = await prisma.user.create({
       data:{
         name,
+        username: normalizedUsername,
         email: normalizedEmail,  // remove the duplicacy
         password: hashedPassword,
-        role: role || "USER", //default role
+        role: finalRole, //default role
         status: "ACTIVE",
         isDeleted: false,
         phone,
@@ -132,7 +156,7 @@ export const signup = async (req, res) => {
        user : safeUser
       });
   } catch (error){
-    console.log("Sign UP Error",error);
+    console.log("Signup Error",error);
     return res.status(500).json({
       success: false,
       message: "SignUp Failed",
@@ -143,29 +167,29 @@ export const signup = async (req, res) => {
 //  -----------------------------------------Login -----------------------------------------------
 
 export const login = async (req, res) =>{
-  try{
-    const {email, password} = req.body;
 
-    const normalizedEmail = email?.toLowerCase(); // remove the duplicacy
+  try{
+    const {username, password} = req.body;
+
+    const normalizedUsername= username?.toLowerCase(); // remove the duplicacy
 
     // 1. Validation
-    if(!email || !password){
+    if(!normalizedUsername || !password){
       return res.status(400).json({
         success: false,
-        message: "Email and Password are required",
+        message: "Username and Password are required",
       });
     }
-    // avoid duplicate emails
 
-    // 2. check user exists
+    // 2. check user exists or find user by username 
     const user = await prisma.user.findUnique({
-      where : {email: normalizedEmail}  // remove the duplicacy
+      where : {username: normalizedUsername}  // remove the duplicacy
     });
 
     if(!user){
       return res.status(400).json({
         success: false,
-        message: "Invalid Email or Password"
+        message: "Invalid Username or Password"
       });
     }
     // Soft delete
@@ -189,15 +213,14 @@ export const login = async (req, res) =>{
     if(!isMatch){
       return res.status(400).json({
         success: false,
-        message: "Invalid Email or Password."
+        message: "Invalid Username or Password."
       });
     }
 
     // 4. Generate token
     const token = jwt.sign({
        id: user.id,
-       email: user.email, 
-       role: user.role  // imp
+       role: user.role  // role come from db
       },
      JWT_SECRET,        // process.env.JWT_SECRET,
       { expiresIn : "1d"}  // again login after 24 hr, automatic logout

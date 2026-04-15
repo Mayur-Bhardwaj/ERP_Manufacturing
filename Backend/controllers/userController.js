@@ -107,7 +107,7 @@ export const getUserById = async (req, res) => {
     const user = await prisma.user.findUnique({
       where: {
         id: Number(id),
-        where: { isDeleted: false }, // ✅ filter
+        // where: { isDeleted: false }, // ✅ filter
       },
       select:{
         id: true,
@@ -120,7 +120,7 @@ export const getUserById = async (req, res) => {
     });
 
     // Not found user
-    if(!user){
+    if(!user || user.isDeleted){
       return res.status(404).json({
         success: false,
         message: "User not found"
