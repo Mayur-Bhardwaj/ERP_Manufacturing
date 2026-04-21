@@ -30,6 +30,11 @@
 
       // 3. Extract token
       const token = authHeader.split(" ")[1];
+      console.log("CURRENT TIME:", Math.floor(Date.now() / 1000));
+      console.log("TOKEN:", token);
+
+
+      // console.log("DECODED TOKEN:", jwt.decode(token)); // 👈 add here
 
       // 4. Verify token
       const decoded = jwt.verify(token, JWT_SECRET);
@@ -47,6 +52,7 @@
       next();
 
     } catch (error) {
+          console.log("JWT ERROR:", error.message);
       return res.status(401).json({
         success: false,
         message: "Invalid or expired token. Please login again.",

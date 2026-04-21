@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import {authMiddleware }from "./middleware/authMiddleware.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
@@ -11,6 +12,15 @@ import dotenv from "dotenv";
 import { userInfo } from "node:os";
 
 dotenv.config();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
+
 // middleware (important for future APIs)
 app.use(express.json());
 
