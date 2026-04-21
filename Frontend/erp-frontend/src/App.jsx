@@ -1,13 +1,9 @@
 import {React } from 'react';
+import AppRoutes from './routes/appRoute';
 
 
 function App() {
-
-  return (
-    <>
-      <h1>ERP Frontend</h1>
-    </>
-  );
+  return <AppRoutes />
 }
 
 export default App;
