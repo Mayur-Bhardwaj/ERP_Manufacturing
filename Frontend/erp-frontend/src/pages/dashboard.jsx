@@ -1,4 +1,4 @@
-import { Dropdown, Layout, Menu, Space, Button,Avatar } from "antd";
+import { Dropdown, Layout, Menu, Space, Button,Avatar, Card } from "antd";
 import {
   UserOutlined,
   DashboardOutlined,
@@ -6,6 +6,8 @@ import {
   LoginOutlined,
   LogoutOutlined
 } from "@ant-design/icons";
+import DashboardCards from "../../components/dashboard/dashboardCards";
+import ProductionChart from "../../components/dashboard/productionChart";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../features/auth/authSlice";
@@ -132,9 +134,15 @@ const Dashboard = () => {
        
 
         {/* Content */}
-        <Content style={{ margin: "20px", background: "#fff", padding: 20 }}>
-          <h2>Welcome to ERP Manufacturing Dashboard</h2>
-        </Content>
+        <Content style={{ margin: "20px" }}>
+          {/*Cards*/}
+          <DashboardCards />
+            <Card title="Production vs Demand Trends" style={{ marginTop: 20, borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
+
+          <ProductionChart />
+          </Card>
+
+          </Content>
       </Layout>
     </Layout>
   );
