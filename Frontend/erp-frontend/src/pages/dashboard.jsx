@@ -8,15 +8,19 @@ import {
 } from "@ant-design/icons";
 import DashboardCards from "../../components/dashboard/dashboardCards";
 import ProductionChart from "../../components/dashboard/productionChart";
+import { getDashboardStats } from "../features/dashboard/dashboardSlice";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector, } from "react-redux";
 import { logout } from "../features/auth/authSlice";
+import useSelection from "antd/es/table/hooks/useSelection";
+import { useEffect } from "react";
 
 const { Header, Sider, Content } = Layout;
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { stats, loading } = useSelector((state) => state.dashboard); // call the api from redux
 
   const handleLogout = () =>{
     localStorage.removeItem("token");
@@ -24,6 +28,9 @@ const Dashboard = () => {
     navigate("/");
   }
 
+  useEffect(()=>{   //  run API when component load
+    dispatch(getDashboardStats());
+  },[dispatch]);
   // Dropdown menus
   // Dropdown menu
   const items = [
@@ -135,8 +142,9 @@ const Dashboard = () => {
 
         {/* Content */}
         <Content style={{ margin: "20px" }}>
+
           {/*Cards*/}
-          <DashboardCards />
+          <DashboardCards stats = {stats} /> {/*pass the props and receive in dashboardCards */}
             <Card title="Production vs Demand Trends" style={{ marginTop: 20, borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
 
           <ProductionChart />

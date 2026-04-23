@@ -41,7 +41,7 @@ const authSlice = createSlice({
     user: null,
     token: localStorage.getItem("token") || null,
     loading: false,
-    isLoggedIn: false,
+    isLoggedIn: !!localStorage.getItem("token"),  // befor this false set and dut to which need login everytime.
     error: null
   },
   reducers: {

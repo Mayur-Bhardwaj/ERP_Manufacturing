@@ -8,7 +8,7 @@ import {
   InboxOutlined
 } from "@ant-design/icons";
 
-const DashboardCards = () => {
+const DashboardCards = ({ stats }) => {
   return (
     <Row gutter={16}>
       
@@ -20,7 +20,7 @@ const DashboardCards = () => {
             <span>Production Output</span>
           </div>
 
-          <h2>12,840</h2>
+          <h2>{ stats.prductionOutput || 0 }</h2>
 
           <p style={{ color: "green" }}>
             <ArrowUpOutlined /> 12% growth
@@ -36,7 +36,7 @@ const DashboardCards = () => {
             <span>Active Work Orders</span>
           </div>
 
-          <h2>84</h2>
+          <h2>{stats?.activeWorkOrders || 0}</h2>
 
           <p style={{ color: "#1677ff" }}>
             +5 Running
@@ -52,7 +52,7 @@ const DashboardCards = () => {
             <span>GST Payable</span>
           </div>
 
-          <h2>12</h2>
+          <h2>{ stats?.gstPayable || 0 }</h2>
 
           <p style={{ color: "red" }}>
             <ArrowDownOutlined /> 4 Days Left
@@ -68,8 +68,11 @@ const DashboardCards = () => {
             <span>Inventory Status</span>
           </div>
 
-          <h2>8</h2>
+          <h2>{stats?.lowStockItems || 0}</h2>  {/*//receive the props for real data comming */}
 
+       {/*   //   stats?.value || 0 ?
+          //   stats? → prevents crash when API not loaded
+          //   || 0 → shows default value instead of blank */}
           <p style={{ color: "orange" }}>
             Low Stock Items
           </p>
