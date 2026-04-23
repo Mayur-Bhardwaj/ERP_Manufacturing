@@ -21,7 +21,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { stats, loading } = useSelector((state) => state.dashboard); // call the api from redux
-
+console.log("STATS:", stats);
   const handleLogout = () =>{
     localStorage.removeItem("token");
     dispatch(logout());

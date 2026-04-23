@@ -34,7 +34,7 @@ app.get('/', (req, res) =>{
 });
 
 // Dashboard Route
-app.use("/api", dashboardRouter);
+app.use("/api/dashboard", dashboardRouter);
 app.use("/api", userRoutes);
 
 app.get('/api/protected', authMiddleware, (req,res)=>{

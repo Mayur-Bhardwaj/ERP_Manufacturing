@@ -4,7 +4,9 @@ import axios from "axios";
 // API Call
 export const getDashboardStats = createAsyncThunk(
   "dashboard/getStats",
-  async() =>{
+  async(_, { getState }) =>{
+    const token = getState().auth.token; //get token from redux
+    console.log("TOKEN:", token);
     const res = await axios.get("/api/dashboard/stats",{  // change the url later now it is dummy
       headers:{
         Authorization: `Bearer ${token}`,

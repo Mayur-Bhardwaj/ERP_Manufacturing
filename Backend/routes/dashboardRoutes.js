@@ -1,21 +1,23 @@
 import express from "express";
 import {authMiddleware, authorizeRoles } from "../middleware/authMiddleware.js";
+import { getDashboardStats } from "../controllers/dashboardController.js";
+
 const  dashboardRouter = express.Router();
 
-// Protected Route -- This is for Normal User
-dashboardRouter.get('/dashboard', authMiddleware, (req, res) =>{
-  res.json({
-    message: "Welcome to Dashboard",
-    user: req.user
-  });
-});
+// Protected Route -- This is for Normal User or Main Dashboard API
+dashboardRouter.get("/stats", authMiddleware, getDashboardStats);
+console.log("Dashboard router loaded");
 
 // Admins Only
 
 dashboardRouter.get("/admin", authMiddleware, authorizeRoles("ADMIN"), (req, res) =>{
   res.json({
-    message: "Admin Panel"
+    message: "Admin Dashboard"
   });
+});
+dashboardRouter.get("/test", (req, res) => {
+    console.log("TEST ROUTE HIT");
+  res.send("Dashboard route working");
 });
 
 export default dashboardRouter;
