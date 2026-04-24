@@ -1,4 +1,4 @@
-import { Dropdown, Layout, Menu, Space, Button,Avatar, Card } from "antd";
+import { Dropdown, Layout, Menu, Space, Button,Avatar, Card, Spin, Skeleton } from "antd";
 import {
   UserOutlined,
   DashboardOutlined,
@@ -12,7 +12,6 @@ import { getDashboardStats } from "../features/dashboard/dashboardSlice";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector, } from "react-redux";
 import { logout } from "../features/auth/authSlice";
-import useSelection from "antd/es/table/hooks/useSelection";
 import { useEffect } from "react";
 
 const { Header, Sider, Content } = Layout;
@@ -20,9 +19,10 @@ const { Header, Sider, Content } = Layout;
 const Dashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { stats, loading } = useSelector((state) => state.dashboard); // call the api from redux
-console.log("STATS:", stats);
-  const handleLogout = () =>{
+  const { stats, loading, error } = useSelector((state) => state.dashboard); // call the api from redux
+  console.log("STATS:", stats);
+ 
+const handleLogout = () =>{
     localStorage.removeItem("token");
     dispatch(logout());
     navigate("/");
@@ -31,8 +31,25 @@ console.log("STATS:", stats);
   useEffect(()=>{   //  run API when component load
     dispatch(getDashboardStats());
   },[dispatch]);
+
+   // Spin Loading
+  if (loading) {
+  return (
+    <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <Spin size="large" description="Loading Dashboard..." />
+    </div>
+  );
+  }
+  // If error comes
+  if (error) {
+    return (
+      <div style={{ textAlign: "center", marginTop: 100 }}>
+        <h2 style={{ color: "red" }}>❌ {error}</h2>
+      </div>
+    );
+  }
+
   // Dropdown menus
-  // Dropdown menu
   const items = [
     {
       key: "1",
@@ -144,10 +161,14 @@ console.log("STATS:", stats);
         <Content style={{ margin: "20px" }}>
 
           {/*Cards*/}
-          <DashboardCards stats = {stats} /> {/*pass the props and receive in dashboardCards */}
+          {loading ? (
+            <Skeleton active/>
+          ) : (
+          <DashboardCards stats = {stats} />
+          )}
             <Card title="Production vs Demand Trends" style={{ marginTop: 20, borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
-
-          <ProductionChart />
+ {/*pass the props and receive in dashboardCards */}
+          <ProductionChart stats = {stats} />
           </Card>
 
           </Content>

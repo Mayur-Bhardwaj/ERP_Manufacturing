@@ -7,11 +7,12 @@ export const getDashboardStats = createAsyncThunk(
   async(_, { getState }) =>{
     const token = getState().auth.token; //get token from redux
     console.log("TOKEN:", token);
-    const res = await axios.get("/api/dashboard/stats",{  // change the url later now it is dummy
+    const res = await axios.get("http://localhost:5000/api/dashboard/stats",{  // change the url later now it is dummy
       headers:{
         Authorization: `Bearer ${token}`,
       },
     });
+        console.log("API RESPONSE:", res.data.data);
     return res.data.data; //only return real data
   }
 );
@@ -30,6 +31,8 @@ const dashboardSlice = createSlice({
         state.loading = true;
       })
       .addCase(getDashboardStats.fulfilled, (state, action) =>{
+          console.log("PAYLOAD:", action.payload); // ✅ ADD THIS
+
         state.loading = false;
         state.stats = action.payload;
       })

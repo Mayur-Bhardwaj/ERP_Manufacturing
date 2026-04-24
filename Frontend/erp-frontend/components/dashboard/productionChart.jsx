@@ -1,39 +1,32 @@
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import { Line } from "@ant-design/charts";
+import { data } from "react-router-dom";
 
-const data = [
-  { name: "May 01", production: 20 },
-  { name: "May 08", production: 45 },
-  { name: "May 15", production: 30 },
-  { name: "May 22", production: 25 },
-  { name: "May 31", production: 50 },
-];
+const productionChart = ({ stats }) =>{
+  // conver recent users into chart data
+  const chartData = stats?.recentUsers?.map((user) => ({
+    date: new Date(user.createdAt).toLocaleDateString(),
+    users: 1
+  }))  || [];
 
-const ProductionChart = () => {
-  return (
-    <ResponsiveContainer width="100%" height={320}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Line
-          type="monotone"
-          dataKey="production"
-          stroke="#1677ff"
-          strokeWidth={3}
-          dot={{ r: 4 }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
+  // group by date
+  const groupedData = Object.values(
+    chartData.reduce((acc, curr) =>{
+      if(!acc[curr.date]) {
+        acc[curr.date] = { date: curr.date,  users: 0};
+      }
+      acc[curr.date].users += 1;
+      return acc;
+    }, {})
   );
+
+  const config = {
+    data: groupedData,
+    xField: "date",
+    yField: "users",
+    point: { size: 5 },
+    smooth: true,
+  };
+  return <Line {...config} />
 };
 
-export default ProductionChart;
+export default productionChart;
