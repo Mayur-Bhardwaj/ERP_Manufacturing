@@ -1,63 +1,63 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const getDashboardStats = async(req, res) =>{
-  try{
-    //total users
-    const totalUsers = await prisma.user.count({
-      where: { isDeleted: false},
-    });
-    //Active Users
-    const activeUsers = await prisma.user.count({
-      where: {
-        status: "ACTIVE",
-        isDeleted: false,
+export const getDashboardStats = async (req, res) => {
+  try {
+
+    const [
+      totalProduction,
+      activeOrders,
+      pendingOrders,
+      totalInvoices,
+      totalPayments,
+      gstPayable
+    ] = await Promise.all([
+      //Total Production
+      prisma.production.count(),
+
+      //Active Orders
+      prisma.order.count({
+        where: { status: "ACTIVE" },
+      }),
+
+      // Pending Orders
+      prisma.order.count({
+        where: { status: "PENDING" },
+      }),
+
+      //Total Invoices
+      prisma.invoice.count(),
+
+            // Total Payments (sum)
+      prisma.payment.aggregate({
+        _sum: { amount: true },
+      }),
+
+            // GST Payable (sum)
+      prisma.invoice.aggregate({
+        _sum: { gstAmount: true },
+      }),
+
+    ]);
+
+    res.json({
+      success: true,
+      stats: {
+        totalProduction,
+        activeOrders,
+        pendingOrders,
+        totalInvoices,
+        totalPayments: totalPayments._sum?.amount || 0,
+        gstPayable: gstPayable._sum?.gstAmount || 0,
       },
-       });
-      // Inactive Users
-      const inactiveUsers = await prisma.user.count({
-        where: {
-          status: "INACTIVE",
-          isDeleted: false
-        },
-      });
-      // Admin count
-      const adminUsers = await prisma.user.count({
-        where: {
-          role: "ADMIN",
-          isDeleted: false
-        },
-      });
-      // Recent Users
-      const recentUsers = await prisma.user.findMany({
-        take: 5,
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          name:true,
-          email: true,
-          role: true,
-          createdAt: true
-        },
-      });
+    });
 
-      return res.json({
-        success: true,
-        data: {
-          totalUsers,
-          activeUsers,
-          inactiveUsers,
-          adminUsers,
-          recentUsers
-        },
-      });
-
-  }catch(error){
-    console.log("Dashboard Error",error);
+  } catch (error) {
+      console.error("Dashboard Error",error);
     res.status(500).json({
       success: false,
-      message: "Dashboard data failed"
+      message: "Dashboard error",
     });
   }
 };

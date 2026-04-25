@@ -1,11 +1,14 @@
 import { Card, Col, Row } from "antd";
-import {
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  AppstoreOutlined,
-  ToolOutlined,
+import {  AppstoreOutlined,
+ ShoppingCartOutlined,
+  ClockCircleOutlined,
   FileTextOutlined,
-  InboxOutlined
+  DollarOutlined,
+  CalculatorOutlined,
+  UserOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 
 // const DashboardCards = ({ stats }) => {
@@ -102,38 +105,102 @@ import {
 //   fontSize: "18px",
 //   color: "#1677ff",
 // };
+
+const cardStyle = {
+  borderRadius: 12,
+  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+};
+
+
+
 const DashboardCards = ({ stats }) => {
+ 
+
+const data = [
+  {
+    title: "Total Production",
+    value: stats?.totalProduction ?? 0,
+    icon: <AppstoreOutlined />,
+    color: "#1677ff",
+    bg: "#e6f4ff",
+  },
+  {
+    title: "Active Orders",
+    value: stats?.activeOrders ?? 0,
+    icon: <ShoppingCartOutlined />,
+    color: "#52c41a",
+    bg: "#f6ffed",
+  },
+  {
+    title: "Pending Orders",
+    value: stats?.pendingOrders ?? 0,
+    icon: <ClockCircleOutlined />,
+    color: "#faad14",
+    bg: "#fffbe6",
+  },
+  {
+    title: "Invoices",
+    value: stats?.totalInvoices ?? 0,
+    icon: <FileTextOutlined />,
+    color: "#722ed1",
+    bg: "#f9f0ff",
+  },
+  {
+    title: "Payments",
+    value: stats?.totalPayments ?? 0,
+    icon: <DollarOutlined />,
+    color: "#13c2c2",
+    bg: "#e6fffb",
+  },
+  {
+    title: "GST Payable",
+    value: `₹${stats?.gstPayable ?? 0}`,
+    icon: <CalculatorOutlined />,
+    color: "#ff4d4f",
+    bg: "#fff1f0",
+  },
+];
+
   return (
     <Row gutter={16}>
-      <Col span={6}>
-        <Card>
-          <h3>Total Users</h3>
-          <h2>{stats?.totalUsers || 0}</h2>
-        </Card>
-      </Col>
+      {data.map((item, index) => (
+        <Col span={6} key={index}>
+          <Card
+            style={{
+              borderRadius: 12,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              borderLeft: `5px solid ${item.color}`,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              
+              {/* Left */}
+              <div>
+                <p style={{ margin: 0, color: "#888" }}>{item.title}</p>
+                <h2 style={{ margin: 0 }}>{item.value}</h2>
+              </div>
 
-      <Col span={6}>
-        <Card>
-          <h3>Active Users</h3>
-          <h2>{stats?.activeUsers || 0}</h2>
-        </Card>
-      </Col>
+              {/* Right Icon */}
+              <div
+                style={{
+                  fontSize: 24,
+                  color: item.color,
+                  background: item.bg,
+                  padding: 10,
+                  borderRadius: "50%",
+                }}
+              >
+                {item.icon}
+              </div>
 
-      <Col span={6}>
-        <Card>
-          <h3>Inactive Users</h3>
-          <h2>{stats?.inactiveUsers || 0}</h2>
-        </Card>
-      </Col>
-
-      <Col span={6}>
-        <Card>
-          <h3>Admins</h3>
-          <h2>{stats?.adminUsers || 0}</h2>
-        </Card>
-      </Col>
+            </div>
+          </Card>
+        </Col>
+      ))}
     </Row>
   );
 };
 
+
 export default DashboardCards;
+

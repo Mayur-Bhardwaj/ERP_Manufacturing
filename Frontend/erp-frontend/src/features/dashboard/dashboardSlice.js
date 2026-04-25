@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk} from "@reduxjs/toolkit";
-import axios from "axios";
+import API from "../../services/api";
 
 // API Call
 export const getDashboardStats = createAsyncThunk(
@@ -7,13 +7,14 @@ export const getDashboardStats = createAsyncThunk(
   async(_, { getState }) =>{
     const token = getState().auth.token; //get token from redux
     console.log("TOKEN:", token);
-    const res = await axios.get("http://localhost:5000/api/dashboard/stats",{  // change the url later now it is dummy
-      headers:{
-        Authorization: `Bearer ${token}`,
-      },
-    });
-        console.log("API RESPONSE:", res.data.data);
-    return res.data.data; //only return real data
+    // const res = await axios.get("http://localhost:5000/api/dashboard/stats",{  // change the url later now it is dummy
+    //   headers:{
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    // });
+    const res = await API.get("/dashboard/stats");
+        console.log("API RESPONSE:", res.data);
+    return res.data; //only return real data
   }
 );
 
@@ -21,6 +22,7 @@ const dashboardSlice = createSlice({
   name: "dashboard",
   initialState: {
     stats: {},
+    recentUsers : [],
     loading: false,
     error: null
   },
@@ -34,7 +36,8 @@ const dashboardSlice = createSlice({
           console.log("PAYLOAD:", action.payload); // ✅ ADD THIS
 
         state.loading = false;
-        state.stats = action.payload;
+        state.stats = action.payload.stats;
+        state.recentUsers = action.payload.recentUsers;
       })
       .addCase(getDashboardStats.rejected, (state,action) =>{
         state.loading = false;

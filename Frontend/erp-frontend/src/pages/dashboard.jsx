@@ -1,4 +1,4 @@
-import { Dropdown, Layout, Menu, Space, Button,Avatar, Card, Spin, Skeleton } from "antd";
+import { Dropdown, Layout, Menu, Space, Button,Avatar, Card, Spin, Skeleton, Table } from "antd";
 import {
   UserOutlined,
   DashboardOutlined,
@@ -19,7 +19,7 @@ const { Header, Sider, Content } = Layout;
 const Dashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { stats, loading, error } = useSelector((state) => state.dashboard); // call the api from redux
+  const { stats, recentUsers,loading, error } = useSelector((state) => state.dashboard); // call the api from redux
   console.log("STATS:", stats);
  
 const handleLogout = () =>{
@@ -33,13 +33,7 @@ const handleLogout = () =>{
   },[dispatch]);
 
    // Spin Loading
-  if (loading) {
-  return (
-    <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <Spin size="large" description="Loading Dashboard..." />
-    </div>
-  );
-  }
+  {loading ? <Skeleton active/> : <DashboardCards stats={stats}/>}
   // If error comes
   if (error) {
     return (
@@ -73,6 +67,16 @@ const handleLogout = () =>{
     },
   ];
 
+  const columns = [
+    { title: "Name", dataIndex: "name" },
+    { title: "Email", dataIndex: "email" },
+    { title: "Role", dataIndex: "role"},
+    {
+    title: "Joined",
+    dataIndex: "createdAt",
+    render: (date) => new Date(date).toLocaleDateString(),
+  },
+  ];
   return (
     <Layout style={{ minHeight: "100vh" }}>
       
@@ -169,6 +173,16 @@ const handleLogout = () =>{
             <Card title="Production vs Demand Trends" style={{ marginTop: 20, borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
  {/*pass the props and receive in dashboardCards */}
           <ProductionChart stats = {stats} />
+          </Card>
+
+          <Card title="Recent Users" style={{ margin: 20 }}>
+            <Table
+            dataSource={recentUsers}
+            columns={columns}
+            rowKey="id"
+            pagination= {false}
+ />
+
           </Card>
 
           </Content>

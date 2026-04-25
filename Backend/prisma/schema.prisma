@@ -9,18 +9,18 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-    url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
-model User{
-  id          Int            @id @default(autoincrement())
-  name        String 
-  username    String       @unique
-  email       String        @unique
+model User {
+  id          Int      @id @default(autoincrement())
+  name        String
+  username    String   @unique
+  email       String   @unique
   password    String
   role        String
-  status      String        @default("ACTIVE")
-  isDeleted Boolean  @default(false)
+  status      String   @default("ACTIVE")
+  isDeleted   Boolean  @default(false)
   phone       String?
   companyName String?
   gstNumber   String?
@@ -29,6 +29,59 @@ model User{
   state       String?
   city        String?
   zipCode     String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Production {
+  id             Int      @id @default(autoincrement())
+  productName    String
+  quantity       Int
+  productionDate DateTime @default(now())
+  status         String   @default("COMPLETED") // COMPLETED/ IN_PROGRESS
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Order {
+  id           Int       @id @default(autoincrement())
+  orderNumber  String    @unique
+  customerName String
+  totalAmount  Float
+  status       String    @default("PENDING") // PENDING / ACTIVE/ COMPLETED
+  orderDate    DateTime  @default(now())
+  invoices     Invoice[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Invoice {
+  id            Int      @id @default(autoincrement())
+  invoiceNumber String   @unique
+  orderId       Int
+  amount        Float
+  gstAmount     Float
+  totalAmount   Float
+  status        String   @default("UNPAID") //UNPAID / PAID
+  invoiceDate   DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id            Int      @id @default(autoincrement())
+  invoiceId     Int
+  amount        Float
+  paymentMethod String //CASH/ UPI/ BANK
+  paymentDate   DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
