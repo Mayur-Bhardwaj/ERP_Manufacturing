@@ -175,7 +175,7 @@ const handleLogout = () =>{
           <ProductionChart stats = {stats} />
           </Card>
 
-          <Card title="Recent Users" style={{ margin: 20 }}>
+          {/*<Card title="Recent Users" style={{ margin: 20 }}>
             <Table
             dataSource={recentUsers}
             columns={columns}
@@ -183,7 +183,7 @@ const handleLogout = () =>{
             pagination= {false}
  />
 
-          </Card>
+          </Card> */}
 
           </Content>
       </Layout>

@@ -11,7 +11,8 @@ export const getDashboardStats = async (req, res) => {
       pendingOrders,
       totalInvoices,
       totalPayments,
-      gstPayable
+      gstPayable,
+      overduePayments
     ] = await Promise.all([
       //Total Production
       prisma.production.count(),
@@ -39,6 +40,17 @@ export const getDashboardStats = async (req, res) => {
         _sum: { gstAmount: true },
       }),
 
+
+      // Overdue Payments
+      prisma.invoice.count({
+        where:{
+          status: "UNPAID",
+          invoiceDate: {
+             lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),  // after 7 days
+          },
+        },
+      }),
+
     ]);
 
     res.json({
@@ -50,6 +62,8 @@ export const getDashboardStats = async (req, res) => {
         totalInvoices,
         totalPayments: totalPayments._sum?.amount || 0,
         gstPayable: gstPayable._sum?.gstAmount || 0,
+        overduePayments,
+        lowStockItems: 0 // temporary fallback
       },
     });
 
