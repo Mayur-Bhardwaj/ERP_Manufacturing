@@ -41,6 +41,25 @@ export const getDashboardStats = createAsyncThunk(
   }
 );
 
+export const getDashboardAnalytics = createAsyncThunk(
+  "dashboard/getAnalytics",
+  async (range = 7, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token;
+
+      const res = await API.get(`/dashboard/analytics?range=${range}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return res.data.chart;
+    } catch (error) {
+      return rejectWithValue("Analytics fetch failed");
+    }
+  }
+);
+
 
 const dashboardSlice = createSlice({
   name: "dashboard",
@@ -56,12 +75,14 @@ const dashboardSlice = createSlice({
     lowStockItems: 0,  
     },
     recentUsers : [],
+    chartData: [],
     loading: false,
     error: null
   },
 
   extraReducers: (builder) => {
     builder
+    // Stats
       .addCase(getDashboardStats.pending, (state) =>{
         state.loading = true;
       })
@@ -88,7 +109,19 @@ const dashboardSlice = createSlice({
       .addCase(getDashboardStats.rejected, (state,action) =>{
         state.loading = false;
         state.error = action.payload || action.error.message;
-      });
+      })
+    //  Analytics (chart)
+    .addCase(getDashboardAnalytics.pending, (state) =>{
+      state.loading = true;
+    })
+    .addCase(getDashboardAnalytics.fulfilled, (state, action) =>{
+      state.loading = false;
+      state.chartData = action.payload;
+    })
+    .addCase(getDashboardAnalytics.rejected, (state, action) =>{
+      state.loading = false;
+      state.action = action.payload;
+    })
   },
 });
 export default dashboardSlice.reducer;

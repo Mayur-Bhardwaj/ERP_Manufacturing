@@ -1,4 +1,4 @@
-import { Dropdown, Layout, Menu, Space, Button,Avatar, Card, Spin, Skeleton, Table } from "antd";
+import { Dropdown, Layout, Menu, Space, Button,Avatar, Card, Spin, Skeleton, Table, Select } from "antd";
 import {
   UserOutlined,
   DashboardOutlined,
@@ -8,18 +8,20 @@ import {
 } from "@ant-design/icons";
 import DashboardCards from "../../components/dashboard/dashboardCards";
 import ProductionChart from "../../components/dashboard/productionChart";
-import { getDashboardStats } from "../features/dashboard/dashboardSlice";
+import { getDashboardAnalytics, getDashboardStats } from "../features/dashboard/dashboardSlice";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector, } from "react-redux";
 import { logout } from "../features/auth/authSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const { Header, Sider, Content } = Layout;
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { stats, recentUsers,loading, error } = useSelector((state) => state.dashboard); // call the api from redux
+  const { stats, recentUsers, chartData, loading, error } = useSelector((state) => state.dashboard); // call the api from redux
+  const [range, setRange] = useState(7);
+
   console.log("STATS:", stats);
  
 const handleLogout = () =>{
@@ -29,8 +31,9 @@ const handleLogout = () =>{
   }
 
   useEffect(()=>{   //  run API when component load
-    dispatch(getDashboardStats());
-  },[dispatch]);
+    dispatch(getDashboardStats()); // Call API form redux
+    dispatch(getDashboardAnalytics(range));
+  },[dispatch, range]);
 
    // Spin Loading
   {loading ? <Skeleton active/> : <DashboardCards stats={stats}/>}
@@ -159,8 +162,6 @@ const handleLogout = () =>{
           </div>
         </Header>
 
-       
-
         {/* Content */}
         <Content style={{ margin: "20px" }}>
 
@@ -172,8 +173,17 @@ const handleLogout = () =>{
           )}
             <Card title="Production vs Demand Trends" style={{ marginTop: 20, borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
  {/*pass the props and receive in dashboardCards */}
-          <ProductionChart stats = {stats} />
+          <ProductionChart data = {chartData} />
           </Card>
+
+          <Select
+            value={range}
+            onChange={(val) => setRange(val)}
+            style={{ width: 120, marginBottom: 20 }}
+          >
+          <Select.Option value={7}>Last 7 Days</Select.Option>
+          <Select.Option value={30}>Last 30 Days</Select.Option>
+        </Select>
 
           {/*<Card title="Recent Users" style={{ margin: 20 }}>
             <Table
@@ -192,4 +202,3 @@ const handleLogout = () =>{
 };
 
 export default Dashboard;
-

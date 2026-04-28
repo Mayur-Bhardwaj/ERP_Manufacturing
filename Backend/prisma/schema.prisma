@@ -37,6 +37,7 @@ model Production {
   id             Int      @id @default(autoincrement())
   productName    String
   quantity       Int
+  unitCost       Float
   productionDate DateTime @default(now())
   status         String   @default("COMPLETED") // COMPLETED/ IN_PROGRESS
   createdAt      DateTime @default(now())
@@ -84,4 +85,13 @@ model Payment {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model product{
+  id            Int
+  name          String
+  price         Float
+  stock         Int
+  minStock      Int
+  createdAt     DateTime @default(now())
 }
